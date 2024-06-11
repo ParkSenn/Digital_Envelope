@@ -31,6 +31,7 @@ public class ProfileService {
 
     public List<Profile> getAllProfiles() {
         List<Profile> profiles = new ArrayList<>();
+
         for (String userId : profileFileMap.keySet()) {
             try {
                 Profile profile = AdminDecryptionUtil.decryptProfileEnvelope(userId);

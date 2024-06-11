@@ -35,30 +35,35 @@ public class ProfileEncryptionUtil {
 
             // 사용자 전자서명 생성 및 비밀 키로 암호화
             byte[] signature = SignManager.createSign(keyPairManager.getPrivateKey(), profileBytes);
-            Cipher aesCipher = Cipher.getInstance(SecretKeyManager.getKeyAlgorithm());
-            aesCipher.init(Cipher.ENCRYPT_MODE, secretKeyManager.getSecretKey());
-            byte[] encryptedSignature = aesCipher.doFinal(signature);
+            if (signature.length == 0) {
+                System.out.println("전자서명 생성 중 예외 발생");
+            } else {
+                Cipher aesCipher = Cipher.getInstance(SecretKeyManager.getKeyAlgorithm());
+                aesCipher.init(Cipher.ENCRYPT_MODE, secretKeyManager.getSecretKey());
+                byte[] encryptedSignature = aesCipher.doFinal(signature);
 
-            // 프로필 데이터를 비밀 키로 암호화
-            byte[] encryptedProfileData = aesCipher.doFinal(profileBytes);
+                // 프로필 데이터를 비밀 키로 암호화
+                byte[] encryptedProfileData = aesCipher.doFinal(profileBytes);
 
-            // 사용자 공개 키를 비밀 키로 암호화
-            byte[] publicKeyBytes = keyPairManager.getPublicKey().getEncoded();
-            byte[] encryptedPublicKey = aesCipher.doFinal(publicKeyBytes);
+                // 사용자 공개 키를 비밀 키로 암호화
+                byte[] publicKeyBytes = keyPairManager.getPublicKey().getEncoded();
+                byte[] encryptedPublicKey = aesCipher.doFinal(publicKeyBytes);
 
-            // Admin 공개 키를 이용해 AES 비밀 키를 암호화 (전자봉투 생성)
-            PublicKey adminPbKey = KeyPairManager.readPbKey("admin_public.key");
-            Cipher rsaCipher = Cipher.getInstance(KeyPairManager.getKeyAlgorithm());
-            rsaCipher.init(Cipher.WRAP_MODE, adminPbKey);
-            byte[] encryptedSecretKey = rsaCipher.wrap(secretKeyManager.getSecretKey());
+                // Admin 공개 키를 이용해 AES 비밀 키를 암호화 (전자봉투 생성)
+                PublicKey adminPbKey = KeyPairManager.readPbKey("admin_public.key");
+                Cipher rsaCipher = Cipher.getInstance(KeyPairManager.getKeyAlgorithm());
+                rsaCipher.init(Cipher.WRAP_MODE, adminPbKey);
+                byte[] encryptedSecretKey = rsaCipher.wrap(secretKeyManager.getSecretKey());
 
-            // 각 데이터를 별도 파일에 저장
-            saveToFile(userId + "_profile.dat", encryptedProfileData);
-            saveToFile(userId + "_signature.dat", encryptedSignature);
-            saveToFile(userId + "_public.key", encryptedPublicKey);
-            saveToFile(userId + "_secret.key", encryptedSecretKey);
+                // 각 데이터를 별도 파일에 저장
+                saveToFile(userId + "_profile.dat", encryptedProfileData);
+                saveToFile(userId + "_signature.dat", encryptedSignature);
+                saveToFile(userId + "_public.key", encryptedPublicKey);
+                saveToFile(userId + "_secret.key", encryptedSecretKey);
 
-            System.out.println("암호화 성공");
+                System.out.println("암호화 성공");
+            }
+
         } catch (Exception e) {
             throw new EncryptionException("암호화 과정 중 오류 발생", e);
         }

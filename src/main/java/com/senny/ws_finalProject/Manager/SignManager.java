@@ -5,16 +5,21 @@ import java.security.*;
 public class SignManager {
     private static final String signAlgorithm = "SHA256withRSA";
 
-    public static final String getSignAlgorithm() {
-        return signAlgorithm;
-    }
-    public static byte[] createSign(PrivateKey prKey, byte[] byteData) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public static byte[] createSign(PrivateKey prKey, byte[] byteData) {
+        byte[] signature = null;
+        try {
+            Signature sig = Signature.getInstance(signAlgorithm);
+            sig.initSign(prKey);
+            sig.update(byteData);
+            signature = sig.sign();
+        }  catch (InvalidKeyException | SignatureException e) {
+            e.printStackTrace();
+            signature = new byte[0];
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
 
-        Signature sig = Signature.getInstance(signAlgorithm);
-        sig.initSign(prKey);
-        sig.update(byteData);
-
-        return sig.sign(); // byteData의 해시 값을 계산해줌
+        return signature;
     }
 
     public static boolean verifySign(PublicKey publicKey, byte[] data, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {

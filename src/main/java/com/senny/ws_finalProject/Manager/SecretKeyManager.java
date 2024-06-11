@@ -4,8 +4,6 @@ import lombok.Getter;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.io.*;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
 @Getter
@@ -29,13 +27,6 @@ public class SecretKeyManager {
 
     public void createSecretKey() {
         this.secretKey = this.keyGen.generateKey();
-    }
-
-    public void saveKey(Key key, String fname) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(fname);
-             ObjectOutputStream os = new ObjectOutputStream(fos)) {
-            os.writeObject(key);
-        }
     }
 
 }
