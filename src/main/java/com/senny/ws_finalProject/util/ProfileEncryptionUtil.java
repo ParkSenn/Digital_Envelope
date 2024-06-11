@@ -1,8 +1,8 @@
 package com.senny.ws_finalProject.util;
 
-import com.senny.ws_finalProject.Key.MyKeyPair;
-import com.senny.ws_finalProject.Key.MySecretKey;
-import com.senny.ws_finalProject.Key.MySign;
+import com.senny.ws_finalProject.Manager.KeyPairManager;
+import com.senny.ws_finalProject.Manager.SecretKeyManager;
+import com.senny.ws_finalProject.Manager.SignManager;
 import com.senny.ws_finalProject.dto.Profile;
 
 import javax.crypto.Cipher;
@@ -14,13 +14,13 @@ import java.security.PublicKey;
 public class ProfileEncryptionUtil {
     public static void saveProfileWithEnvelope(Profile profile, String userId) throws Exception {
         // AES 비밀 키 생성
-        MySecretKey mySecretKey = MySecretKey.getSecretKeyInstance(256);
-        mySecretKey.createSecretKey();
+        SecretKeyManager secretKeyManager = SecretKeyManager.getSecretKeyInstance(256);
+        secretKeyManager.createSecretKey();
 
         // 사용자 RSA 키 생성 및 저장
-        MyKeyPair myKeyPair = MyKeyPair.getInstance(2048);
-        myKeyPair.createKeys();
-        myKeyPair.saveKeys(userId);
+        KeyPairManager keyPairManager = KeyPairManager.getInstance(2048);
+        keyPairManager.createKeys();
+        keyPairManager.saveKeys(userId);
 
         // 프로필 객체를 직렬화하여 바이트 배열로 변환
         byte[] profileBytes;
@@ -31,23 +31,23 @@ public class ProfileEncryptionUtil {
         }
 
         // 사용자 전자서명 생성 및 비밀 키로 암호화
-        byte[] signature = MySign.createSign(myKeyPair.getPrivateKey(), profileBytes);
+        byte[] signature = SignManager.createSign(keyPairManager.getPrivateKey(), profileBytes);
         Cipher aesCipher = Cipher.getInstance("AES");
-        aesCipher.init(Cipher.ENCRYPT_MODE, mySecretKey.getSecretKey());
+        aesCipher.init(Cipher.ENCRYPT_MODE, secretKeyManager.getSecretKey());
         byte[] encryptedSignature = aesCipher.doFinal(signature);
 
         // 프로필 데이터를 비밀 키로 암호화
         byte[] encryptedProfileData = aesCipher.doFinal(profileBytes);
 
         // 사용자 공개 키를 비밀 키로 암호화
-        byte[] publicKeyBytes = myKeyPair.getPublicKey().getEncoded();
+        byte[] publicKeyBytes = keyPairManager.getPublicKey().getEncoded();
         byte[] encryptedPublicKey = aesCipher.doFinal(publicKeyBytes);
 
         // Admin 공개 키를 이용해 AES 비밀 키를 암호화 (전자봉투 생성)
-        PublicKey adminPbKey = MyKeyPair.readPbKey("admin_public.key");
+        PublicKey adminPbKey = KeyPairManager.readPbKey("admin_public.key");
         Cipher rsaCipher = Cipher.getInstance("RSA");
         rsaCipher.init(Cipher.WRAP_MODE, adminPbKey);
-        byte[] encryptedSecretKey = rsaCipher.wrap(mySecretKey.getSecretKey());
+        byte[] encryptedSecretKey = rsaCipher.wrap(secretKeyManager.getSecretKey());
 
         // 각 데이터를 별도 파일에 저장
         saveToFile(userId + "_profile.dat", encryptedProfileData);

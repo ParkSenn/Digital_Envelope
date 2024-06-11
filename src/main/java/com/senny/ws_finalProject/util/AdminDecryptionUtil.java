@@ -1,7 +1,7 @@
 package com.senny.ws_finalProject.util;
 
-import com.senny.ws_finalProject.Key.MyKeyPair;
-import com.senny.ws_finalProject.Key.MySign;
+import com.senny.ws_finalProject.Manager.KeyPairManager;
+import com.senny.ws_finalProject.Manager.SignManager;
 import com.senny.ws_finalProject.dto.Profile;
 
 import javax.crypto.Cipher;
@@ -17,16 +17,16 @@ import java.security.spec.X509EncodedKeySpec;
 public class AdminDecryptionUtil {
     public static Profile decryptProfileEnvelope(String userId) throws Exception {
         // Admin의 개인 키 읽기
-        PrivateKey adminPrKey = MyKeyPair.readPrKey("admin_private.key");
+        PrivateKey adminPrKey = KeyPairManager.readPrKey("admin_private.key");
 
         // 전자봉투에서 AES 비밀 키 복호화
         Cipher rsaCipher = Cipher.getInstance("RSA");
         rsaCipher.init(Cipher.UNWRAP_MODE, adminPrKey);
-        byte[] wrappedSecretKey = readEncryptedSecretKey(userId);
+        byte[] wrappedSecretKey = readEncryptedData(userId, "secret");
         SecretKey secretKey = (SecretKey) rsaCipher.unwrap(wrappedSecretKey, "AES", Cipher.SECRET_KEY);
 
         // 암호화된 프로필 데이터 읽기
-        byte[] encryptedData = readEncryptedProfileData(userId);
+        byte[] encryptedData = readEncryptedData(userId, "profile");
 
         // AES 비밀 키로 암호화된 데이터 복호화
         Cipher aesCipher = Cipher.getInstance("AES");
@@ -37,15 +37,15 @@ public class AdminDecryptionUtil {
         byte[] profileBytes = decryptedData;
 
         // 서명 및 공개 키 읽기
-        byte[] encryptedSignature = readEncryptedSignature(userId);
-        byte[] encryptedPublicKey = readEncryptedPublicKey(userId);
+        byte[] encryptedSignature = readEncryptedData(userId, "signature");
+        byte[] encryptedPublicKey = readEncryptedData(userId, "public");
 
         // 전자서명 및 공개 키 복호화
         byte[] signature = decryptData(encryptedSignature, secretKey);
         PublicKey publicKey = decryptPublicKey(encryptedPublicKey, secretKey);
 
         // 전자서명 검증
-        boolean isVerified = MySign.verifySign(publicKey, profileBytes, signature);
+        boolean isVerified = SignManager.verifySign(publicKey, profileBytes, signature);
         if (isVerified) {
             System.out.println("복호화 성공");
             return deserializeProfile(profileBytes);
@@ -60,26 +60,17 @@ public class AdminDecryptionUtil {
         }
     }
 
-    private static byte[] readEncryptedSecretKey(String userId) throws Exception {
-        try (FileInputStream fis = new FileInputStream(userId + "_secret.key")) {
-            return fis.readAllBytes();
-        }
-    }
+    private static byte[] readEncryptedData(String userId, String file) throws Exception {
+        String fname = userId;
 
-    private static byte[] readEncryptedProfileData(String userId) throws Exception {
-        try (FileInputStream fis = new FileInputStream(userId + "_profile.dat")) {
-            return fis.readAllBytes();
+        switch (file) {
+            case "profile" -> fname += "_profile.dat";
+            case "secret" -> fname += "_secret.key";
+            case "signature" -> fname += "_signature.dat";
+            case "public" -> fname += "_public.key";
         }
-    }
 
-    private static byte[] readEncryptedSignature(String userId) throws Exception {
-        try (FileInputStream fis = new FileInputStream(userId + "_signature.dat")) {
-            return fis.readAllBytes();
-        }
-    }
-
-    private static byte[] readEncryptedPublicKey(String userId) throws Exception {
-        try (FileInputStream fis = new FileInputStream(userId + "_public.key")) {
+        try (FileInputStream fis = new FileInputStream(fname)) {
             return fis.readAllBytes();
         }
     }
@@ -94,6 +85,7 @@ public class AdminDecryptionUtil {
         Cipher aesCipher = Cipher.getInstance("AES");
         aesCipher.init(Cipher.DECRYPT_MODE, secretKey);
         byte[] decryptedPublicKeyBytes = aesCipher.doFinal(encryptedPublicKey);
+
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(decryptedPublicKeyBytes);
         return keyFactory.generatePublic(publicKeySpec);

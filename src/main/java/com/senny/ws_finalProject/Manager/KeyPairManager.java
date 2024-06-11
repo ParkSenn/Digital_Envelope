@@ -1,14 +1,12 @@
-package com.senny.ws_finalProject.Key;
+package com.senny.ws_finalProject.Manager;
 
 import lombok.Getter;
 
 import java.io.*;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 
 @Getter
-public class MyKeyPair {
+public class KeyPairManager {
     private static final String keyAlgorithm = "RSA"; // For pb,pr key
 
     private KeyPairGenerator keyGen;
@@ -17,8 +15,8 @@ public class MyKeyPair {
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
-    public static MyKeyPair getInstance(int keylength) throws NoSuchAlgorithmException {
-        MyKeyPair rslt = new MyKeyPair();
+    public static KeyPairManager getInstance(int keylength) throws NoSuchAlgorithmException {
+        KeyPairManager rslt = new KeyPairManager();
 
         rslt.keyGen = KeyPairGenerator.getInstance(keyAlgorithm);
         rslt.keyGen.initialize(keylength);
@@ -64,12 +62,6 @@ public class MyKeyPair {
             System.out.println(e.getMessage());
             return null;
         }
-    }
-
-    public void setPublicKeyBytes(byte[] publicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
-        this.publicKey = keyFactory.generatePublic(keySpec);
     }
 
 }
