@@ -14,6 +14,10 @@ public class SecretKeyManager {
     private KeyGenerator keyGen;
     private SecretKey secretKey;
 
+    public static final String getKeyAlgorithm() {
+        return keyAlgorithm;
+    }
+
     public static SecretKeyManager getSecretKeyInstance(int keylength) throws NoSuchAlgorithmException {
         SecretKeyManager rslt = new SecretKeyManager();
 

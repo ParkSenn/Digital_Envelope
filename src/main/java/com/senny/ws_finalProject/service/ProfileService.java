@@ -1,6 +1,10 @@
 package com.senny.ws_finalProject.service;
 
 import com.senny.ws_finalProject.dto.Profile;
+import com.senny.ws_finalProject.exceptions.DecryptionException;
+import com.senny.ws_finalProject.exceptions.EncryptionException;
+import com.senny.ws_finalProject.exceptions.FileReadException;
+import com.senny.ws_finalProject.exceptions.SignatureVerificationException;
 import com.senny.ws_finalProject.util.AdminDecryptionUtil;
 import com.senny.ws_finalProject.util.ProfileEncryptionUtil;
 import org.springframework.stereotype.Service;
@@ -19,10 +23,11 @@ public class ProfileService {
         try {
             ProfileEncryptionUtil.saveProfileWithEnvelope(profile, profile.getId());
             profileFileMap.put(profile.getId(), profile.getId() + PROFILE_FILE_EXTENSION);
-        } catch (Exception e) {
+        } catch (EncryptionException e) {
             e.printStackTrace();
         }
     }
+
 
     public List<Profile> getAllProfiles() {
         List<Profile> profiles = new ArrayList<>();
@@ -32,7 +37,7 @@ public class ProfileService {
                 if (profile != null) {
                     profiles.add(profile);
                 }
-            } catch (Exception e) {
+            } catch (DecryptionException | SignatureVerificationException | FileReadException e) {
                 e.printStackTrace();
             }
         }

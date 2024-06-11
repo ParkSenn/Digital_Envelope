@@ -15,6 +15,10 @@ public class KeyPairManager {
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
+    public static final String getKeyAlgorithm() {
+        return keyAlgorithm;
+    }
+
     public static KeyPairManager getInstance(int keylength) throws NoSuchAlgorithmException {
         KeyPairManager rslt = new KeyPairManager();
 
