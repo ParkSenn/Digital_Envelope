@@ -1,38 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
     <head>
-        <title>submitProfile</title>
+        <title>프로필 제출 완료</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <style>
-            body {
-                background-color: #f0f0f0;
-                font-family: Arial, sans-serif;
-            }
-
-            .message-container {
-                max-width: 400px;
-                margin: 100px auto;
-                padding: 20px;
-                background-color: white;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                text-align: center;
-            }
-
-            .message-container h2 {
-                margin-bottom: 20px;
-                color: #333;
-            }
-
-            .message-container p {
-                color: #555;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" th:href="@{/css/submitProfile.css}" />
     </head>
     <body>
         <div class="message-container">
-            <h2>Profile Submitted</h2>
-            <p>Your profile has been submitted! Approval may take some time.</p>
+            <h2>프로필 제출 완료</h2>
+            <p>프로필이 제출되었습니다! 승인되는 데에는 시간이 걸릴 수 있습니다.</p>
         </div>
     </body>
 </html>

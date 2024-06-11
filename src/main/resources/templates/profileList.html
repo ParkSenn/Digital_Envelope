@@ -1,49 +1,13 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>profileList</title>
+    <title>프로필 리스트</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <style>
-        body {
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-
-        .list-container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .list-container h2 {
-            margin-bottom: 20px;
-            color: #333;
-            text-align: center;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-
-        th {
-            background-color: #ffb86c;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/profileList.css}" />
 </head>
 <body>
 <div class="list-container">
-    <h2>Submitted Profiles</h2>
+    <h2>승인 대기 프로필 목록</h2>
     <table>
         <thead>
         <tr>
@@ -56,7 +20,6 @@
         </tr>
         </thead>
         <tbody>
-        <!-- 프로필 데이터를 반복 출력합니다. -->
         <tr th:each="profile : ${profiles}">
             <td th:text="${profile.id}"></td>
             <td th:text="${profile.name}"></td>
