@@ -16,13 +16,13 @@ import java.io.ObjectInputStream;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 
-public class AdminDecryptionUtil { //AES, RSA
+public class AdminDecryptionUtil {
     public static Profile decryptProfileEnvelope(String userId) throws DecryptionException, SignatureVerificationException, FileReadException {
         try {
-            // Admin의 개인 키 읽기
+            // Admin의 개인키 읽어서 가져오기
             PrivateKey adminPrKey = KeyPairManager.readPrKey("admin_private.key");
 
-            // 전자봉투에서 AES 비밀 키 복호화
+            // 전자봉투에서 비밀키 복호화하여 추출
             Cipher rsaCipher = Cipher.getInstance(KeyPairManager.getKeyAlgorithm());
             rsaCipher.init(Cipher.UNWRAP_MODE, adminPrKey);
             byte[] wrappedSecretKey = readEncryptedData(userId, "secret");
@@ -31,19 +31,19 @@ public class AdminDecryptionUtil { //AES, RSA
             // 암호화된 프로필 데이터 읽기
             byte[] encryptedData = readEncryptedData(userId, "profile");
 
-            // AES 비밀 키로 암호화된 데이터 복호화
+            // 비밀키로 암호화된 데이터 복호화
             Cipher aesCipher = Cipher.getInstance(SecretKeyManager.getKeyAlgorithm());
             aesCipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] decryptedData = aesCipher.doFinal(encryptedData);
 
-            // 복호화된 프로필 데이터
+            // 복호화된 프로필 데이터 바이트 배열
             byte[] profileBytes = decryptedData;
 
-            // 서명 및 공개 키 읽기
+            // 전자서명이랑 공개키 읽어서 가져오기
             byte[] encryptedSignature = readEncryptedData(userId, "signature");
             byte[] encryptedPublicKey = readEncryptedData(userId, "public");
 
-            // 전자서명 및 공개 키 복호화
+            // 전자서명이랑 공개키 복호화
             byte[] signature = decryptData(encryptedSignature, secretKey);
             PublicKey publicKey = decryptPublicKey(encryptedPublicKey, secretKey);
 
@@ -100,11 +100,12 @@ public class AdminDecryptionUtil { //AES, RSA
         try {
             Cipher aesCipher = Cipher.getInstance(SecretKeyManager.getKeyAlgorithm());
             aesCipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] decryptedPublicKeyBytes = aesCipher.doFinal(encryptedPublicKey);
+            byte[] decryptedPublicKeyBytes = aesCipher.doFinal(encryptedPublicKey); // 복호화 된 공개키 바이트 배열 반환
 
+            // 복호화된 공개키 바이트 배열로 PublicKey 객체 만들기
             KeyFactory keyFactory = KeyFactory.getInstance(KeyPairManager.getKeyAlgorithm());
-            X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(decryptedPublicKeyBytes);
-            return keyFactory.generatePublic(publicKeySpec);
+            X509EncodedKeySpec pbKeySpec = new X509EncodedKeySpec(decryptedPublicKeyBytes);
+            return keyFactory.generatePublic(pbKeySpec);
         } catch (Exception e) {
             throw new DecryptionException("공개키 복호화 실패: " + e.getMessage(), e);
         }
